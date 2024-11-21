@@ -18,7 +18,7 @@ scaler = joblib.load('models/scaler.joblib')
 
 # MongoDB connection
 try:
-    client = MongoClient(os.getenv('MONGODB_URI'), serverSelectionTimeoutMS=5000)
+    client = MongoClient(os.getenv('MONGODB_URI'), serverSelectionTimeoutMS=2000)
     db = client['air_quality_db']
     collection = db['air_quality_data']
 
