@@ -3,28 +3,39 @@ import pandas as pd
 from datetime import datetime
 import os
 from dotenv import load_dotenv
-from pymongo import MongoClient
 import time
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 
 # Load environment variables
 load_dotenv()
 time.sleep(1)
+
 
 class AQIDataCollector:
     def __init__(self):
         self.api_key = os.getenv('WAQI_API_KEY')
         self.base_url = "https://api.waqi.info/feed"
         print(f"Base URL initialized: {self.base_url}")
-        self.mongo_client = MongoClient(os.getenv('MONGODB_URI'))
+
+        # MongoDB secure connection
+        uri = os.getenv('MONGODB_URI')
+        if not uri:
+            raise ValueError("MongoDB URI not found. Please set 'MONGODB_URI' in your environment.")
+
+        try:
+            self.mongo_client = MongoClient(uri, server_api=ServerApi('1'))
+            self.mongo_client.admin.command('ping')  # Validate connection
+            print("Pinged your MongoDB deployment. Successfully connected!")
+        except Exception as e:
+            raise ConnectionError(f"Failed to connect to MongoDB: {e}")
+
         self.db = self.mongo_client['air_quality_db']
         self.collection = self.db['air_quality_data']
 
         # Validate required environment variables
         if not self.api_key:
             raise ValueError("API key not found. Please set 'WAQI_API_KEY' in your environment.")
-        if not os.getenv('MONGODB_URI'):
-            raise ValueError("MongoDB URI not found. Please set 'MONGODB_URI' in your environment.")
-
     def fetch_city_data(self, city):
         """
         Fetch current AQI data for a specific city

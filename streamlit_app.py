@@ -4,8 +4,9 @@ import numpy as np
 import joblib
 import plotly.express as px
 from datetime import datetime, timedelta
-from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 import os
 from dotenv import load_dotenv
 import logging
@@ -26,19 +27,16 @@ if 'connection_error' not in st.session_state:
 
 def init_mongodb():
     """Initialize MongoDB connection with proper error handling"""
-    if not os.getenv('MONGODB_URI'):
+    uri = os.getenv('MONGODB_URI')
+    if not uri:
         raise ValueError("MONGODB_URI environment variable is not set")
 
     try:
-        # Attempt to connect to MongoDB
-        client = MongoClient(
-            os.getenv('MONGODB_URI'),
-            serverSelectionTimeoutMS=5000,
-            connectTimeoutMS=5000
-        )
+        # MongoDB secure connection
+        client = MongoClient(uri, server_api=ServerApi('1'))
 
-        # Test connection
-        client.server_info()
+        # Test the connection
+        client.admin.command('ping')
 
         db = client['air_quality_db']
         collection = db['air_quality_data']
@@ -49,17 +47,11 @@ def init_mongodb():
         logger.info("Successfully connected to MongoDB")
         return client, db, collection
 
-    except ConnectionFailure as e:
-        error_msg = f"Failed to connect to MongoDB: Connection Failed - {str(e)}"
+    except Exception as e:
+        error_msg = f"Unexpected error connecting to MongoDB: {str(e)}"
         logger.error(error_msg)
         st.session_state.connection_error = error_msg
-        raise ConnectionFailure(error_msg)
-
-    except ServerSelectionTimeoutError as e:
-        error_msg = f"Failed to connect to MongoDB: Server Selection Timeout - {str(e)}"
-        logger.error(error_msg)
-        st.session_state.connection_error = error_msg
-        raise ServerSelectionTimeoutError(error_msg)
+        raise Exception(error_msg)
 
     except Exception as e:
         error_msg = f"Unexpected error connecting to MongoDB: {str(e)}"
