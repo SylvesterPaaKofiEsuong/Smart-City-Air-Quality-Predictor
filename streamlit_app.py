@@ -27,14 +27,13 @@ if 'connection_error' not in st.session_state:
 
 def init_mongodb():
     """Initialize MongoDB connection with proper error handling"""
-    uri = os.getenv('mongodb+srv://sylvester:PvlOeLmrNfoqmtuZ@cluster0.vtd8d.mongodb.net/')
+    uri = os.getenv('MONGODB_URI')
     if not uri:
         raise ValueError("MONGODB_URI environment variable is not set")
 
     try:
         # MongoDB secure connection
-        client = MongoClient(uri, server_api=ServerApi('1'))
-        client = MongoClient(uri, tlsCAFile=certifi.where())
+        client = MongoClient(uri, tlsCAFile=certifi.where(), server_api=ServerApi('1'))
 
         # Test the connection
         client.admin.command('ping')
