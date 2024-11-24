@@ -8,7 +8,7 @@ from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment 
 load_dotenv()
 
 # Load the trained model and scaler
