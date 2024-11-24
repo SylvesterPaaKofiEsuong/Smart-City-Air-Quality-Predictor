@@ -36,20 +36,10 @@ def init_mongodb():
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         ssl_context.verify_mode = ssl.CERT_REQUIRED
 
-        client = MongoClient(
-            uri,
-            server_api=ServerApi('1'),
-            ssl_cert_reqs=ssl.CERT_REQUIRED,
-            ssl_ca_certs=certifi.where(),
-            ssl_match_hostname=True,
-            ssl_context=ssl_context,
-            connectTimeoutMS=30000,
-            socketTimeoutMS=30000,
-            serverSelectionTimeoutMS=30000
-        )
+        uri = "mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-        # Test connection
-        client.admin.command('ismaster')
+        # Create a new client and connect to the server
+        client = MongoClient(uri, server_api=ServerApi('1'))
 
         db = client['air_quality_db']
         collection = db['air_quality_data']
