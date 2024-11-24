@@ -33,7 +33,7 @@ def init_mongodb():
 
     try:
         # MongoDB secure connection
-        client = MongoClient(uri, tlsCAFile=certifi.where())
+        client = MongoClient(uri,server_api=ServerApi('1'))
 
         # Test the connection
         client.admin.command('ping')
