@@ -23,7 +23,6 @@ if 'mongodb_connected' not in st.session_state:
     st.session_state.mongodb_connected = False
 if 'connection_error' not in st.session_state:
     st.session_state.connection_error = None
-
 import certifi
 
 
@@ -32,29 +31,33 @@ def init_mongodb():
     try:
         uri = "mongodb+srv://sylvester:PvlOeLmrNfoqmtuZ@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-        import ssl
         client = MongoClient(
             uri,
-            tls=True,
-            tlsAllowInvalidCertificates=True,
             server_api=ServerApi('1'),
-            ssl_cert_reqs=ssl.CERT_NONE,
-            tls_insecure=True
+            tls=True,
+            tlsCAFile=certifi.where(),
+            connectTimeoutMS=30000,
+            socketTimeoutMS=30000,
+            serverSelectionTimeoutMS=30000
         )
+
+        # Test the connection
+        client.admin.command('ping')
 
         db = client['air_quality_db']
         collection = db['air_quality_data']
 
-        # Test connection
-        client.admin.command('ping')
-
         st.session_state.mongodb_connected = True
+        st.session_state.connection_error = None
+
+        logger.info("Successfully connected to MongoDB")
         return client, db, collection
 
     except Exception as e:
-        print(f"Error: {e}")
-        raise e
-
+        error_msg = f"Unexpected error connecting to MongoDB: {str(e)}"
+        logger.error(error_msg)
+        st.session_state.connection_error = error_msg
+        raise Exception(error_msg)
 
 # Load the trained model and scaler
 try:

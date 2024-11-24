@@ -1,8 +1,10 @@
-
+import pymongo
+import sys
+import ssl
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
-uri = "mongodb+srv://sylvester:PvlOeLmrNfoqmtuZ@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+uri = "mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
@@ -13,3 +15,9 @@ try:
     print("Pinged your deployment. You successfully connected to MongoDB!")
 except Exception as e:
     print(e)
+
+print(pymongo.version)
+
+
+print(f"Python version: {sys.version}")
+print(f"OpenSSL version: {ssl.OPENSSL_VERSION}")
