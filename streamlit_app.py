@@ -31,14 +31,17 @@ import certifi
 def init_mongodb():
     """Initialize MongoDB connection with proper error handling"""
     try:
-        uri = os.getenv('MONGODB_URI')
+        # Add SSL parameters directly in the connection string
+        uri = ("mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/"
+               "?retryWrites=true&w=majority"
+               "&appName=Cluster0"
+               "&tls=true"
+               "&tlsAllowInvalidCertificates=false"
+               "&tlsAllowInvalidHostnames=false")
 
-        # Updated connection configuration with correct parameter names
         client = MongoClient(
             uri,
             server_api=ServerApi('1'),
-            tls=True,
-            tlsCAFile=certifi.where(),
             connectTimeoutMS=30000,
             socketTimeoutMS=30000,
             serverSelectionTimeoutMS=30000
