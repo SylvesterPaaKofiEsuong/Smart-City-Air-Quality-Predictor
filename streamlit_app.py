@@ -30,36 +30,30 @@ import certifi
 def init_mongodb():
     """Initialize MongoDB connection with proper error handling"""
     try:
-        uri = "mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        uri = "mongodb+srv://sylvester:PvlOeLmrNfoqmtuZ@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-        # Modified connection settings with SSL configurations and certifi
+        import ssl
         client = MongoClient(
             uri,
+            tls=True,
+            tlsAllowInvalidCertificates=True,
             server_api=ServerApi('1'),
-            ssl=True,
-            tlsCAFile=certifi.where(),
-            connectTimeoutMS=30000,
-            socketTimeoutMS=30000,
-            serverSelectionTimeoutMS=30000
+            ssl_cert_reqs=ssl.CERT_NONE,
+            tls_insecure=True
         )
-
-        # Test the connection
-        client.admin.command('ping')
 
         db = client['air_quality_db']
         collection = db['air_quality_data']
 
-        st.session_state.mongodb_connected = True
-        st.session_state.connection_error = None
+        # Test connection
+        client.admin.command('ping')
 
-        logger.info("Successfully connected to MongoDB")
+        st.session_state.mongodb_connected = True
         return client, db, collection
 
     except Exception as e:
-        error_msg = f"Unexpected error connecting to MongoDB: {str(e)}"
-        logger.error(error_msg)
-        st.session_state.connection_error = error_msg
-        raise Exception(error_msg)
+        print(f"Error: {e}")
+        raise e
 
 
 # Load the trained model and scaler
