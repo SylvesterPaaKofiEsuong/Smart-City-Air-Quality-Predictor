@@ -31,7 +31,7 @@ import certifi
 def init_mongodb():
     """Initialize MongoDB connection with proper error handling"""
     try:
-        uri = "mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        uri = os.getenv('MONGODB_URI')
 
         # Updated connection configuration with correct parameter names
         client = MongoClient(
