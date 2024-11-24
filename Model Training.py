@@ -141,7 +141,7 @@ class AQIModelTrainer:
 
 if __name__ == "__main__":
     # Load data
-    data_path = 'C:\\Users\\Const\\PycharmProjects\\Smart City Air Quality Predictor\\air_quality_data.csv'
+    data_path = 'air_quality_data.csv'
 
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Dataset not found at: {data_path}")
