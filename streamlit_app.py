@@ -5,7 +5,6 @@ import certifi
 import joblib
 import plotly.express as px
 from datetime import datetime, timedelta
-from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import os
