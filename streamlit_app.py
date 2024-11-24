@@ -31,9 +31,9 @@ import certifi
 def init_mongodb():
     """Initialize MongoDB connection with proper error handling"""
     try:
-        uri = "mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        uri = "mongodb+srv://sylvester:PvlOeLmrNfoqmtuZ@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-        # Updated connection configuration
+        # Updated connection configuration with correct parameter names
         client = MongoClient(
             uri,
             server_api=ServerApi('1'),
@@ -41,14 +41,11 @@ def init_mongodb():
             tlsCAFile=certifi.where(),
             connectTimeoutMS=30000,
             socketTimeoutMS=30000,
-            serverSelectionTimeoutMS=30000,
-            ssl_cert_reqs='CERT_REQUIRED',  # Added this
-            tls_allow_invalid_hostnames=False,  # Added this
-            tlsAllowInvalidCertificates=False  # Added this
+            serverSelectionTimeoutMS=30000
         )
 
-        # Verify TLS/SSL connection
-        client.admin.command('ismaster')  # Changed from ping to ismaster
+        # Test the connection
+        client.admin.command('ismaster')
 
         db = client['air_quality_db']
         collection = db['air_quality_data']
