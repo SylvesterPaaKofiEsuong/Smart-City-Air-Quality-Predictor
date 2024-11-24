@@ -27,7 +27,7 @@ if 'connection_error' not in st.session_state:
 
 def init_mongodb():
     """Initialize MongoDB connection with proper error handling"""
-    uri = os.getenv('MONGODB_URI')
+    uri = os.getenv('uri')
     if not uri:
         raise ValueError("MONGODB_URI environment variable is not set")
 
