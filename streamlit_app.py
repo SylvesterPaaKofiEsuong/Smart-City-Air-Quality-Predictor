@@ -53,12 +53,6 @@ def init_mongodb():
         st.session_state.connection_error = error_msg
         raise Exception(error_msg)
 
-    except Exception as e:
-        error_msg = f"Unexpected error connecting to MongoDB: {str(e)}"
-        logger.error(error_msg)
-        st.session_state.connection_error = error_msg
-        raise Exception(error_msg)
-
 
 # Load the trained model and scaler
 try:
@@ -128,8 +122,98 @@ else:
         except Exception as e:
             st.sidebar.error(f"Reconnection failed: {str(e)}")
 
-# Rest of your existing code remains the same...
-# [Previous code for city selection, data display, and predictions]
+# Add city selection
+cities = ['New York', 'London', 'Tokyo', 'Paris', 'Singapore']  # Add your cities
+selected_city = st.selectbox('Select City', cities)
+
+# Create tabs for different views
+tab1, tab2, tab3 = st.tabs(['Current Data', 'Predictions', 'Historical Trends'])
+
+with tab1:
+    st.header('Current Air Quality Data')
+
+    # Load and display latest data
+    df = load_latest_data()
+    if not df.empty:
+        # Display current AQI and pollutant levels
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Current AQI", f"{df['aqi'].iloc[0]:.0f}")
+        with col2:
+            st.metric("PM2.5", f"{df['pm25'].iloc[0]:.1f} µg/m³")
+        with col3:
+            st.metric("Temperature", f"{df['temperature'].iloc[0]:.1f}°C")
+
+        # Display detailed data table
+        st.subheader('Recent Measurements')
+        st.dataframe(df[['timestamp', 'aqi', 'pm25', 'temperature', 'humidity']])
+
+with tab2:
+    st.header('AQI Prediction')
+
+    # Input form for predictions
+    with st.form("prediction_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            temperature = st.number_input('Temperature (°C)', value=25.0)
+            humidity = st.number_input('Humidity (%)', value=60.0)
+        with col2:
+            pm25 = st.number_input('PM2.5 (µg/m³)', value=15.0)
+            wind_speed = st.number_input('Wind Speed (m/s)', value=2.0)
+
+        submitted = st.form_submit_button("Predict AQI")
+
+        if submitted:
+            # Prepare features for prediction
+            features = np.array([[temperature, humidity, pm25, wind_speed]])
+            prediction = predict_aqi(features)
+
+            if prediction is not None:
+                st.success(f'Predicted AQI: {prediction:.2f}')
+
+                # Add AQI category
+                if prediction <= 50:
+                    st.info('Category: Good')
+                elif prediction <= 100:
+                    st.warning('Category: Moderate')
+                else:
+                    st.error('Category: Unhealthy')
+
+with tab3:
+    st.header('Historical Trends')
+
+    # Date range selector
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input('Start Date', datetime.now() - timedelta(days=7))
+    with col2:
+        end_date = st.date_input('End Date', datetime.now())
+
+    # Load historical data
+    if st.session_state.mongodb_connected:
+        query = {
+            'timestamp': {
+                '$gte': datetime.combine(start_date, datetime.min.time()),
+                '$lte': datetime.combine(end_date, datetime.max.time())
+            }
+        }
+        historical_data = list(collection.find(query))
+        if historical_data:
+            df_historical = pd.DataFrame(historical_data)
+
+            # Create time series plot
+            fig = px.line(df_historical,
+                          x='timestamp',
+                          y=['aqi', 'pm25'],
+                          title='Air Quality Trends')
+            st.plotly_chart(fig)
+
+            # Display summary statistics
+            st.subheader('Summary Statistics')
+            summary_stats = df_historical[['aqi', 'pm25', 'temperature', 'humidity']].describe()
+            st.dataframe(summary_stats)
+        else:
+            st.info('No historical data available for the selected date range')
 
 # Footer with additional system info
 st.markdown("---")
