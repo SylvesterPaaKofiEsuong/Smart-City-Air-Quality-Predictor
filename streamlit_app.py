@@ -30,7 +30,7 @@ if 'connection_error' not in st.session_state:
 
 def init_mongodb():
     try:
-        uri = "mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        uri = os.getenv('MONGODB_URI')
 
         # Create an SSL context
         ssl_context = ssl.create_default_context(cafile=certifi.where())
