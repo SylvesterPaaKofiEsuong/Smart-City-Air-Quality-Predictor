@@ -25,29 +25,30 @@ if 'mongodb_connected' not in st.session_state:
     st.session_state.mongodb_connected = False
 if 'connection_error' not in st.session_state:
     st.session_state.connection_error = None
-import certifi
+
 
 
 def init_mongodb():
-    """Initialize MongoDB connection with proper error handling"""
     try:
-        # Add SSL parameters directly in the connection string
-        uri = ("mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/"
-               "?retryWrites=true&w=majority"
-               "&appName=Cluster0"
-               "&tls=true"
-               "&tlsAllowInvalidCertificates=false"
-               "&tlsAllowInvalidHostnames=false")
+        uri = "mongodb+srv://sylvester:PvlOeLmrNfoqmtuZ@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+        # Create an SSL context
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
 
         client = MongoClient(
             uri,
             server_api=ServerApi('1'),
+            ssl_cert_reqs=ssl.CERT_REQUIRED,
+            ssl_ca_certs=certifi.where(),
+            ssl_match_hostname=True,
+            ssl_context=ssl_context,
             connectTimeoutMS=30000,
             socketTimeoutMS=30000,
             serverSelectionTimeoutMS=30000
         )
 
-        # Test the connection
+        # Test connection
         client.admin.command('ismaster')
 
         db = client['air_quality_db']
@@ -56,7 +57,6 @@ def init_mongodb():
         st.session_state.mongodb_connected = True
         st.session_state.connection_error = None
 
-        logger.info("Successfully connected to MongoDB")
         return client, db, collection
 
     except Exception as e:
