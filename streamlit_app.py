@@ -24,16 +24,24 @@ if 'mongodb_connected' not in st.session_state:
 if 'connection_error' not in st.session_state:
     st.session_state.connection_error = None
 
+import certifi
+
 
 def init_mongodb():
     """Initialize MongoDB connection with proper error handling"""
-    uri = os.getenv('MONGODB_URI')
-    if not uri:
-        raise ValueError("MONGODB_URI environment variable is not set")
-
     try:
-        # MongoDB secure connection
-        client = MongoClient(uri,server_api=ServerApi('1'))
+        uri = "mongodb+srv://sylvester:sly@cluster0.vtd8d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+        # Modified connection settings with SSL configurations and certifi
+        client = MongoClient(
+            uri,
+            server_api=ServerApi('1'),
+            ssl=True,
+            tlsCAFile=certifi.where(),
+            connectTimeoutMS=30000,
+            socketTimeoutMS=30000,
+            serverSelectionTimeoutMS=30000
+        )
 
         # Test the connection
         client.admin.command('ping')
