@@ -36,6 +36,7 @@ class AQIDataCollector:
         # Validate required environment variables
         if not self.api_key:
             raise ValueError("API key not found. Please set 'WAQI_API_KEY' in your environment.")
+
     def fetch_city_data(self, city):
         """
         Fetch current AQI data for a specific city
