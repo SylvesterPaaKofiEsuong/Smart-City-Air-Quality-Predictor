@@ -5,7 +5,7 @@
   "customizations": {
     "codespaces": {
       "openFiles": [
-        "README.md",
+        "README.md","requirements.txt",
         "streamlit_app.py"
       ]
     },
