@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import certifi
 import joblib
 import plotly.express as px
 from datetime import datetime, timedelta
@@ -34,6 +35,7 @@ def init_mongodb():
     try:
         # MongoDB secure connection
         client = MongoClient(uri, server_api=ServerApi('1'))
+        client = MongoClient(uri, tlsCAFile=certifi.where())
 
         # Test the connection
         client.admin.command('ping')
