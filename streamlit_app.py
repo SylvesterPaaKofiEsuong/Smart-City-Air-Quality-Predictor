@@ -156,28 +156,30 @@ tab1, tab2, tab3 = st.tabs(['Current Data', 'Predictions', 'Historical Trends'])
 with tab1:
     st.header('Current Air Quality Data')
 
+    # Load and display latest data
+    df = load_latest_data()
 
 
-        # Display current AQI and pollutant levels
-        col1, col2, col3 = st.columns(3)
-        if 'aqi' in df.columns:
-            col1.metric("Current AQI", f"{df['aqi'].iloc[0]:.0f}")
-        else:
-            col1.warning("AQI data unavailable.")
+    # Display current AQI and pollutant levels
+    col1, col2, col3 = st.columns(3)
+    if 'aqi' in df.columns:
+        col1.metric("Current AQI", f"{df['aqi'].iloc[0]:.0f}")
+    else:
+        col1.warning("AQI data unavailable.")
 
-        if 'pm25' in df.columns:
-            col2.metric("PM2.5", f"{df['pm25'].iloc[0]:.1f} µg/m³")
-        else:
-            col2.warning("PM2.5 data unavailable.")
+    if 'pm25' in df.columns:
+        col2.metric("PM2.5", f"{df['pm25'].iloc[0]::.1f} µg/m³")
+    else:
+        col2.warning("PM2.5 data unavailable.")
 
-        if 'temperature' in df.columns:
-            col3.metric("Temperature", f"{df['temperature'].iloc[0]:.1f}°C")
-        else:
-            col3.warning("Temperature data unavailable.")
+    if 'temperature' in df.columns:
+        col3.metric("Temperature", f"{df['temperature'].iloc[0]::.1f}°C")
+    else:
+        col3.warning("Temperature data unavailable.")
 
-        # Display detailed data table
-        st.subheader('Recent Measurements')
-        st.dataframe(df[['timestamp', 'aqi', 'pm25', 'temperature', 'humidity']] if not df.empty else None)
+    # Display detailed data table
+    st.subheader('Recent Measurements')
+    st.dataframe(df[['timestamp', 'aqi', 'pm25', 'temperature', 'humidity']] if not df.empty else None)
 
 with tab2:
     st.header('AQI Prediction')
