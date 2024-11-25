@@ -56,28 +56,28 @@ class AQIDataCollector:
 
     def _parse_response(self, data):
         """
-        Parse the API response into a structured format
+        Parse the API response into a structured format.
         """
         try:
+            pollutants = data.get('iaqi', {})
+            weather = data.get('iaqi', {})
             parsed_data = {
                 'timestamp': datetime.fromtimestamp(data['time']['v']),
                 'aqi': data['aqi'],
                 'city': data['city']['name'],
-                'lat': data['city']['geo'][0],
-                'lon': data['city']['geo'][1],
                 'pollutants': {
-                    'pm25': data.get('iaqi', {}).get('pm25', {}).get('v'),
-                    'pm10': data.get('iaqi', {}).get('pm10', {}).get('v'),
-                    'o3': data.get('iaqi', {}).get('o3', {}).get('v'),
-                    'no2': data.get('iaqi', {}).get('no2', {}).get('v'),
-                    'so2': data.get('iaqi', {}).get('so2', {}).get('v'),
-                    'co': data.get('iaqi', {}).get('co', {}).get('v')
+                    'pm25': pollutants.get('pm25', {}).get('v', None),
+                    'pm10': pollutants.get('pm10', {}).get('v', None),
+                    'o3': pollutants.get('o3', {}).get('v', None),
+                    'no2': pollutants.get('no2', {}).get('v', None),
+                    'so2': pollutants.get('so2', {}).get('v', None),
+                    'co': pollutants.get('co', {}).get('v', None)
                 },
                 'weather': {
-                    'temp': data.get('iaqi', {}).get('t', {}).get('v'),
-                    'pressure': data.get('iaqi', {}).get('p', {}).get('v'),
-                    'humidity': data.get('iaqi', {}).get('h', {}).get('v'),
-                    'wind_speed': data.get('iaqi', {}).get('w', {}).get('v')
+                    'temp': weather.get('t', {}).get('v', None),
+                    'pressure': weather.get('p', {}).get('v', None),
+                    'humidity': weather.get('h', {}).get('v', None),
+                    'wind_speed': weather.get('w', {}).get('v', None)
                 }
             }
             return parsed_data
@@ -179,3 +179,5 @@ if __name__ == "__main__":
     # Export collected data
     collector.export_to_csv(collected_data)
     collector.export_to_parquet(collected_data)
+
+

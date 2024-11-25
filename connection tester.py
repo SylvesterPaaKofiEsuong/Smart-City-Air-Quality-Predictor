@@ -21,3 +21,4 @@ print(pymongo.version)
 
 print(f"Python version: {sys.version}")
 print(f"OpenSSL version: {ssl.OPENSSL_VERSION}")
+

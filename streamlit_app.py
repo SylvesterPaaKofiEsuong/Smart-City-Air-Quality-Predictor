@@ -26,7 +26,8 @@ if 'mongodb_connected' not in st.session_state:
 if 'connection_error' not in st.session_state:
     st.session_state.connection_error = None
 
-
+# Features used during model training
+MODEL_FEATURES = ['weather.temp', 'weather.humidity', 'pollutants.pm25', 'weather.wind_speed']
 
 def init_mongodb():
     try:
@@ -77,7 +78,6 @@ except Exception as e:
     """)
     collection = None
 
-
 def load_latest_data():
     """Load the latest data from MongoDB with error handling"""
     try:
@@ -92,18 +92,36 @@ def load_latest_data():
         st.error(f"Failed to load data: {str(e)}")
         return pd.DataFrame()
 
+def predict_aqi(features, feature_names):
+    """
+    Predict AQI using the trained model.
 
-def predict_aqi(features):
-    """Make AQI predictions using the trained model"""
+    Args:
+    - features: np.ndarray, array of features for prediction
+    - feature_names: list, ordered names of the features required by the model
+
+    Returns:
+    - float: predicted AQI value
+    """
     try:
-        features_scaled = scaler.transform(features)
+        # Validate the number of features
+        if len(features[0]) != len(feature_names):
+            raise ValueError(f"Expected {len(feature_names)} features, got {len(features[0])}")
+
+        # Convert features to DataFrame for consistency with training
+        features_df = pd.DataFrame(features, columns=feature_names)
+
+        # Scale features
+        features_scaled = scaler.transform(features_df)
+
+        # Make prediction
         prediction = model.predict(features_scaled)
         return prediction[0]
+
     except Exception as e:
         logger.error(f"Prediction error: {str(e)}")
-        st.error(f"Failed to make prediction: {str(e)}")
+        st.error(f"Prediction failed: {str(e)}")
         return None
-
 
 # Streamlit UI
 st.title('Smart City Air Quality Predictor')
@@ -165,20 +183,29 @@ with tab2:
         submitted = st.form_submit_button("Predict AQI")
 
         if submitted:
-            # Prepare features for prediction
-            features = np.array([[temperature, humidity, pm25, wind_speed]])
-            prediction = predict_aqi(features)
+            try:
+                # Prepare features in the correct order
+                features = np.array([[temperature, humidity, pm25, wind_speed]])
+                prediction = predict_aqi(features, MODEL_FEATURES)
 
-            if prediction is not None:
-                st.success(f'Predicted AQI: {prediction:.2f}')
+                if prediction is not None:
+                    st.success(f'Predicted AQI: {prediction:.2f}')
 
-                # Add AQI category
-                if prediction <= 50:
-                    st.info('Category: Good')
-                elif prediction <= 100:
-                    st.warning('Category: Moderate')
-                else:
-                    st.error('Category: Unhealthy')
+                    # Display AQI category
+                    if prediction <= 50:
+                        st.info('Category: Good')
+                    elif prediction <= 100:
+                        st.warning('Category: Moderate')
+                    elif prediction <= 150:
+                        st.warning('Category: Unhealthy for Sensitive Groups')
+                    elif prediction <= 200:
+                        st.error('Category: Unhealthy')
+                    elif prediction <= 300:
+                        st.error('Category: Very Unhealthy')
+                    else:
+                        st.error('Category: Hazardous')
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
 
 with tab3:
     st.header('Historical Trends')
@@ -229,13 +256,11 @@ with col2:
         except:
             st.markdown("MongoDB Status: Connected")
 
-
 # Cleanup connection on session end
 def cleanup():
     if 'client' in globals():
         client.close()
         logger.info("MongoDB connection closed")
-
 
 import atexit
 
