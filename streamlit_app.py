@@ -93,16 +93,7 @@ def load_latest_data():
         return pd.DataFrame()
 
 def predict_aqi(features, feature_names):
-    """
-    Predict AQI using the trained model.
 
-    Args:
-    - features: np.ndarray, array of features for prediction
-    - feature_names: list, ordered names of the features required by the model
-
-    Returns:
-    - float: predicted AQI value
-    """
     try:
         # Validate the number of features
         if len(features[0]) != len(feature_names):
@@ -153,19 +144,32 @@ with tab1:
 
     # Load and display latest data
     df = load_latest_data()
-    if not df.empty:
+    if df.empty:
+        st.warning("No air quality data available.")
+    else:
+        # Log available columns
+        st.write("Available columns in the data:", df.columns.tolist())
+
         # Display current AQI and pollutant levels
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Current AQI", f"{df['aqi'].iloc[0]:.0f}")
-        with col2:
-            st.metric("PM2.5", f"{df['pm25'].iloc[0]:.1f} µg/m³")
-        with col3:
-            st.metric("Temperature", f"{df['temperature'].iloc[0]:.1f}°C")
+        if 'aqi' in df.columns:
+            col1.metric("Current AQI", f"{df['aqi'].iloc[0]:.0f}")
+        else:
+            col1.warning("AQI data unavailable.")
+
+        if 'pm25' in df.columns:
+            col2.metric("PM2.5", f"{df['pm25'].iloc[0]:.1f} µg/m³")
+        else:
+            col2.warning("PM2.5 data unavailable.")
+
+        if 'temperature' in df.columns:
+            col3.metric("Temperature", f"{df['temperature'].iloc[0]:.1f}°C")
+        else:
+            col3.warning("Temperature data unavailable.")
 
         # Display detailed data table
         st.subheader('Recent Measurements')
-        st.dataframe(df[['timestamp', 'aqi', 'pm25', 'temperature', 'humidity']])
+        st.dataframe(df[['timestamp', 'aqi', 'pm25', 'temperature', 'humidity']] if not df.empty else None)
 
 with tab2:
     st.header('AQI Prediction')
@@ -255,6 +259,7 @@ with col2:
             st.markdown(f"MongoDB Version: {server_status.get('version', 'Unknown')}")
         except:
             st.markdown("MongoDB Status: Connected")
+            st.write("Available columns in the data:", df.columns.tolist())
 
 # Cleanup connection on session end
 def cleanup():
