@@ -158,11 +158,7 @@ with tab1:
 
     # Load and display latest data
     df = load_latest_data()
-    if df.empty:
-        st.warning("No air quality data available.")
-    else:
-        # Log available columns
-        st.write("Available columns in the data:", df.columns.tolist())
+
 
         # Display current AQI and pollutant levels
         col1, col2, col3 = st.columns(3)
