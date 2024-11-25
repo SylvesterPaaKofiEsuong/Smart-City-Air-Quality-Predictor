@@ -273,7 +273,7 @@ with col2:
             st.markdown(f"MongoDB Version: {server_status.get('version', 'Unknown')}")
         except:
             st.markdown("MongoDB Status: Connected")
-            st.write("Available columns in the data:", df.columns.tolist())
+
 
 # Cleanup connection on session end
 def cleanup():
