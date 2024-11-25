@@ -85,8 +85,8 @@ def load_latest_data():
             raise ConnectionError("MongoDB is not connected")
 
         cursor = collection.find().sort('timestamp', -1).limit(100)
-        data = list(cursor)
-        return pd.DataFrame(data)
+        data_path = list(cursor)
+        return pd.DataFrame(data_path)
     except Exception as e:
         logger.error(f"Error loading data: {str(e)}")
         st.error(f"Failed to load data: {str(e)}")
