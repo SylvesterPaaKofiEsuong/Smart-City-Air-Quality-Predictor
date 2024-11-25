@@ -158,8 +158,6 @@ with tab1:
 
     # Load and display latest data
     df = load_latest_data()
-
-
     # Display current AQI and pollutant levels
     col1, col2, col3 = st.columns(3)
     if 'aqi' in df.columns:
@@ -168,12 +166,12 @@ with tab1:
         col1.warning("AQI data unavailable.")
 
     if 'pm25' in df.columns:
-        col2.metric("PM2.5", f"{df['pm25'].iloc[0]::.1f} µg/m³")
+        col2.metric("PM2.5", f"{df['pm25'].iloc[0]:.1f} µg/m³")
     else:
         col2.warning("PM2.5 data unavailable.")
 
     if 'temperature' in df.columns:
-        col3.metric("Temperature", f"{df['temperature'].iloc[0]::.1f}°C")
+        col3.metric("Temperature", f"{df['temperature'].iloc[0]:.1f}°C")
     else:
         col3.warning("Temperature data unavailable.")
 
