@@ -27,7 +27,17 @@ if 'connection_error' not in st.session_state:
     st.session_state.connection_error = None
 
 # Features used during model training
-MODEL_FEATURES = ['weather.temp', 'weather.humidity', 'pollutants.pm25', 'weather.wind_speed']
+MODEL_FEATURES = [
+    'weather.temp',
+    'weather.humidity',
+    'weather.wind_speed',
+    'pollutants.pm25',
+    'pollutants.pm10',
+    'pollutants.o3',
+    'pollutants.no2',
+    'pollutants.so2',
+    'pollutants.co'
+]
 
 def init_mongodb():
     try:
@@ -93,7 +103,15 @@ def load_latest_data():
 
         # Extract nested fields
         if not df.empty:
+            # Pollutant extraction
             df['pm25'] = df['pollutants'].apply(lambda x: x.get('pm25', None))
+            df['pm10'] = df['pollutants'].apply(lambda x: x.get('pm10', None))
+            df['o3'] = df['pollutants'].apply(lambda x: x.get('o3', None))
+            df['no2'] = df['pollutants'].apply(lambda x: x.get('no2', None))
+            df['so2'] = df['pollutants'].apply(lambda x: x.get('so2', None))
+            df['co'] = df['pollutants'].apply(lambda x: x.get('co', None))
+
+            # Weather extraction
             df['temperature'] = df['weather'].apply(lambda x: x.get('temp', None))
             df['humidity'] = df['weather'].apply(lambda x: x.get('humidity', None))
             df['wind_speed'] = df['weather'].apply(lambda x: x.get('wind_speed', None))
@@ -107,7 +125,6 @@ def load_latest_data():
 
 
 def predict_aqi(features, feature_names):
-
     try:
         # Validate the number of features
         if len(features[0]) != len(feature_names):
@@ -186,18 +203,34 @@ with tab2:
     with st.form("prediction_form"):
         col1, col2 = st.columns(2)
         with col1:
-            temperature = st.number_input('Temperature (°C)', value=25.0)
-            humidity = st.number_input('Humidity (%)', value=60.0)
+            temperature = st.number_input('Temperature (°C)', value=25.0, min_value=-50.0, max_value=50.0)
+            humidity = st.number_input('Humidity (%)', value=60.0, min_value=0.0, max_value=100.0)
+            wind_speed = st.number_input('Wind Speed (m/s)', value=2.0, min_value=0.0, max_value=50.0)
         with col2:
-            pm25 = st.number_input('PM2.5 (µg/m³)', value=15.0)
-            wind_speed = st.number_input('Wind Speed (m/s)', value=2.0)
+            pm25 = st.number_input('PM2.5 (µg/m³)', value=15.0, min_value=0.0, max_value=500.0)
+            pm10 = st.number_input('PM10 (µg/m³)', value=20.0, min_value=0.0, max_value=500.0)
+            o3 = st.number_input('Ozone (ppb)', value=30.0, min_value=0.0, max_value=200.0)
+            no2 = st.number_input('Nitrogen Dioxide (ppb)', value=10.0, min_value=0.0, max_value=200.0)
+            so2 = st.number_input('Sulfur Dioxide (ppb)', value=5.0, min_value=0.0, max_value=100.0)
+            co = st.number_input('Carbon Monoxide (ppm)', value=1.0, min_value=0.0, max_value=50.0)
 
         submitted = st.form_submit_button("Predict AQI")
 
         if submitted:
             try:
-                # Prepare features in the correct order
-                features = np.array([[temperature, humidity, pm25, wind_speed]])
+                # Prepare features in the correct order matching MODEL_FEATURES
+                features = np.array([[
+                    temperature,    # weather.temp
+                    humidity,       # weather.humidity
+                    wind_speed,     # weather.wind_speed
+                    pm25,           # pollutants.pm25
+                    pm10,           # pollutants.pm10
+                    o3,             # pollutants.o3
+                    no2,            # pollutants.no2
+                    so2,            # pollutants.so2
+                    co              # pollutants.co
+                ]])
+
                 prediction = predict_aqi(features, MODEL_FEATURES)
 
                 if prediction is not None:
