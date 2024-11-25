@@ -79,18 +79,32 @@ except Exception as e:
     collection = None
 
 def load_latest_data():
-    """Load the latest data from MongoDB with error handling"""
+    """Load and preprocess the latest data from MongoDB."""
     try:
         if not st.session_state.mongodb_connected:
             raise ConnectionError("MongoDB is not connected")
 
+        # Fetch and preprocess data
         cursor = collection.find().sort('timestamp', -1).limit(100)
-        data_path = list(cursor)
-        return pd.DataFrame(data_path)
+        raw_data = list(cursor)
+
+        # Convert to DataFrame
+        df = pd.DataFrame(raw_data)
+
+        # Extract nested fields
+        if not df.empty:
+            df['pm25'] = df['pollutants'].apply(lambda x: x.get('pm25', None))
+            df['temperature'] = df['weather'].apply(lambda x: x.get('temp', None))
+            df['humidity'] = df['weather'].apply(lambda x: x.get('humidity', None))
+            df['wind_speed'] = df['weather'].apply(lambda x: x.get('wind_speed', None))
+
+        return df
+
     except Exception as e:
         logger.error(f"Error loading data: {str(e)}")
         st.error(f"Failed to load data: {str(e)}")
         return pd.DataFrame()
+
 
 def predict_aqi(features, feature_names):
 
