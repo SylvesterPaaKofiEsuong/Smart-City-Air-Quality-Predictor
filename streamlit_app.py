@@ -156,8 +156,6 @@ tab1, tab2, tab3 = st.tabs(['Current Data', 'Predictions', 'Historical Trends'])
 with tab1:
     st.header('Current Air Quality Data')
 
-    # Load and display latest data
-    df = load_latest_data()
 
 
         # Display current AQI and pollutant levels
