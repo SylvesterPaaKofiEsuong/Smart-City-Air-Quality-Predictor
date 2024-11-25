@@ -229,31 +229,83 @@ with tab3:
     with col2:
         end_date = st.date_input('End Date', datetime.now())
 
+    # Logging for debugging
+    logger.info(f"Fetching historical data from {start_date} to {end_date}")
+
     # Load historical data
     if st.session_state.mongodb_connected:
-        query = {
-            'timestamp': {
-                '$gte': datetime.combine(start_date, datetime.min.time()),
-                '$lte': datetime.combine(end_date, datetime.max.time())
+        try:
+            query = {
+                'timestamp': {
+                    '$gte': datetime.combine(start_date, datetime.min.time()),
+                    '$lte': datetime.combine(end_date, datetime.max.time())
+                }
             }
-        }
-        historical_data = list(collection.find(query))
-        if historical_data:
-            df_historical = pd.DataFrame(historical_data)
+            historical_data = list(collection.find(query))
 
-            # Create time series plot
-            fig = px.line(df_historical,
-                          x='timestamp',
-                          y=['aqi', 'pm25'],
-                          title='Air Quality Trends')
-            st.plotly_chart(fig)
+            if historical_data:
+                # Create DataFrame with robust error handling
+                try:
+                    df_historical = pd.DataFrame(historical_data)
 
-            # Display summary statistics
-            st.subheader('Summary Statistics')
-            summary_stats = df_historical[['aqi', 'pm25', 'temperature', 'humidity']].describe()
-            st.dataframe(summary_stats)
-        else:
-            st.info('No historical data available for the selected date range')
+
+                    # Safely extract nested data
+                    def safe_extract(row, parent_key, child_key, default=0):
+                        try:
+                            return row.get(parent_key, {}).get(child_key, default) if isinstance(row.get(parent_key),
+                                                                                                 dict) else default
+                        except Exception as e:
+                            logger.warning(f"Data extraction error: {e}")
+                            return default
+
+
+                    # Apply safe extraction
+                    df_historical['aqi'] = df_historical['aqi'].fillna(0)
+                    df_historical['pm25'] = df_historical.apply(lambda row: safe_extract(row, 'pollutants', 'pm25'),
+                                                                axis=1)
+                    df_historical['temperature'] = df_historical.apply(lambda row: safe_extract(row, 'weather', 'temp'),
+                                                                       axis=1)
+
+                    # Convert timestamp
+                    df_historical['timestamp'] = pd.to_datetime(df_historical['timestamp'])
+
+                    # Sort by timestamp to ensure correct line plot
+                    df_historical = df_historical.sort_values('timestamp')
+
+                    # Create interactive time series plot
+                    fig = px.line(df_historical,
+                                  x='timestamp',
+                                  y=['aqi', 'pm25', 'temperature'],
+                                  title='Air Quality and Weather Trends',
+                                  labels={'value': 'Measurement', 'variable': 'Metric'},
+                                  height=500)
+
+                    # Customize plot appearance
+                    fig.update_layout(
+                        xaxis_title='Timestamp',
+                        legend_title_text='Metrics',
+                        hovermode='x unified'
+                    )
+
+                    st.plotly_chart(fig, use_container_width=True)
+
+                    # Display summary statistics
+                    st.subheader('Summary Statistics')
+                    summary_stats = df_historical[['aqi', 'pm25', 'temperature']].describe()
+                    st.dataframe(summary_stats)
+
+                except Exception as data_error:
+                    logger.error(f"DataFrame processing error: {data_error}")
+                    st.error(f"Could not process historical data: {data_error}")
+
+            else:
+                st.info('No historical data available for the selected date range')
+
+        except Exception as query_error:
+            logger.error(f"Historical data query error: {query_error}")
+            st.error(f"Failed to retrieve historical data: {query_error}")
+    else:
+        st.warning("MongoDB is not connected. Please check your connection.")
 
 # Footer with additional system info
 st.markdown("---")
