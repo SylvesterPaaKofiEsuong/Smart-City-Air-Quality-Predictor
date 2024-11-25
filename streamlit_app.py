@@ -31,6 +31,7 @@ MODEL_FEATURES = [
     'weather.temp',
     'weather.humidity',
     'weather.wind_speed',
+    'weather.pressure',
     'pollutants.pm25',
     'pollutants.pm10',
     'pollutants.o3',
@@ -115,9 +116,8 @@ def load_latest_data():
             df['temperature'] = df['weather'].apply(lambda x: x.get('temp', None))
             df['humidity'] = df['weather'].apply(lambda x: x.get('humidity', None))
             df['wind_speed'] = df['weather'].apply(lambda x: x.get('wind_speed', None))
-
+            df['pressure'] = df['weather'].apply(lambda x: x.get('pressure', None))
         return df
-
     except Exception as e:
         logger.error(f"Error loading data: {str(e)}")
         st.error(f"Failed to load data: {str(e)}")
@@ -206,6 +206,7 @@ with tab2:
             temperature = st.number_input('Temperature (°C)', value=25.0, min_value=-50.0, max_value=50.0)
             humidity = st.number_input('Humidity (%)', value=60.0, min_value=0.0, max_value=100.0)
             wind_speed = st.number_input('Wind Speed (m/s)', value=2.0, min_value=0.0, max_value=50.0)
+            pressure = st.number_input('Atmospheric Pressure (hPa)', value=1013.0, min_value=800.0, max_value=1200.0)
         with col2:
             pm25 = st.number_input('PM2.5 (µg/m³)', value=15.0, min_value=0.0, max_value=500.0)
             pm10 = st.number_input('PM10 (µg/m³)', value=20.0, min_value=0.0, max_value=500.0)
@@ -223,6 +224,7 @@ with tab2:
                     temperature,    # weather.temp
                     humidity,       # weather.humidity
                     wind_speed,     # weather.wind_speed
+                    pressure,       # weather.pressure
                     pm25,           # pollutants.pm25
                     pm10,           # pollutants.pm10
                     o3,             # pollutants.o3
