@@ -28,16 +28,16 @@ if 'connection_error' not in st.session_state:
 
 # Features used during model training
 MODEL_FEATURES = [
-    'weather.temp',
-    'weather.humidity',
-    'weather.wind_speed',
-    'weather.pressure',
     'pollutants.pm25',
     'pollutants.pm10',
     'pollutants.o3',
     'pollutants.no2',
     'pollutants.so2',
-    'pollutants.co'
+    'pollutants.co',
+    'weather.temp',
+    'weather.pressure',
+    'weather.humidity',
+    'weather.wind_speed'
 ]
 
 def init_mongodb():
@@ -221,16 +221,16 @@ with tab2:
             try:
                 # Prepare features in the correct order matching MODEL_FEATURES
                 features = np.array([[
-                    temperature,    # weather.temp
-                    humidity,       # weather.humidity
-                    wind_speed,     # weather.wind_speed
-                    pressure,       # weather.pressure
-                    pm25,           # pollutants.pm25
-                    pm10,           # pollutants.pm10
-                    o3,             # pollutants.o3
-                    no2,            # pollutants.no2
-                    so2,            # pollutants.so2
-                    co              # pollutants.co
+                    pm25,  # pollutants.pm25
+                    pm10,  # pollutants.pm10
+                    o3,  # pollutants.o3
+                    no2,  # pollutants.no2
+                    so2,  # pollutants.so2
+                    co,  # pollutants.co
+                    temperature,  # weather.temp
+                    pressure,  # weather.pressure
+                    humidity,  # weather.humidity
+                    wind_speed,  # weather.wind_speed
                 ]])
 
                 prediction = predict_aqi(features, MODEL_FEATURES)
